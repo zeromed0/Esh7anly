@@ -8,11 +8,11 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm install --legacy-peer-deps
+# ⭐ الحل الحقيقي هنا ⭐
+RUN npm install --legacy-peer-deps --no-optional
 
 COPY . .
 
-# ⭐ الحل هنا ⭐
 ENV ROLLUP_SKIP_NATIVE=true
 
 RUN npm run build
