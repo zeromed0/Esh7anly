@@ -1,35 +1,35 @@
 
-# ===============================
-# Stage 1: Frontend (Node 20)
-# ===============================
-FROM node:20.19.0-bullseye AS frontend
+# =========================
+# PHP + Apache for Laravel
+# =========================
+FROM php:8.2-apache
 
-WORKDIR /app
+# System deps
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    unzip \
+    git \
+    && docker-php-ext-install pdo pdo_mysql zip \
+    && a2enmod rewrite
 
-COPY package.json package-lock.json ./
-
-RUN npm ci --legacy-peer-deps
-
-COPY . .
-
-ENV NODE_ENV=production
-
-RUN npm run build
-
-
-# ===============================
-# Stage 2: Backend (PHP)
-# ===============================
-FROM php:8.2-fpm
-
+# Set working dir
 WORKDIR /var/www/html
 
-RUN docker-php-ext-install pdo pdo_mysql
+# Copy composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY --from=frontend /app /var/www/html
+# Copy project
+COPY . .
 
-RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 755 /var/www/html
+# Install PHP deps
+RUN composer install --no-dev --optimize-autoloader
 
-EXPOSE 8000
-CMD ["php-fpm"]
+# Permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Laravel optimizations
+RUN php artisan config:clear \
+ && php artisan route:clear \
+ && php artisan view:clear
+
+EXPOSE 80
