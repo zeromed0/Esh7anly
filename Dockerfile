@@ -28,8 +28,11 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Laravel optimizations
-RUN php artisan config:clear \
+CMD php artisan migrate --force \
+ && php artisan config:clear \
+ && php artisan cache:clear \
  && php artisan route:clear \
+ && php-fpm \
  && php artisan view:clear
 
 EXPOSE 80
