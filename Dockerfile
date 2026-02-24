@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
     git \
-    && docker-php-ext-install pdo pdo_mysql zip \
+    && docker-php-ext-install pdo pdo_pgsql zip \
     && a2enmod rewrite
 
 # Set Apache DocumentRoot to Laravel public
