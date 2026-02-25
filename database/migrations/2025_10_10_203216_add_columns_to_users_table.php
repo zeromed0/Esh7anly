@@ -14,6 +14,9 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false)->after('balance');
             $table->boolean('is_banned')->default(false)->after('is_verified');
         });
+        if (!Schema::hasColumn('users', 'avatar')) {
+    $table->string('avatar')->nullable();
+}
     }
 
     public function down()
