@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminTopupController;
@@ -36,6 +37,11 @@ Route::get('/', function () {
 // 📦 Routes خاصة بالمستخدم (User Panel)
 // ============================
 Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
+
+   Route::get('/__migrate', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return nl2br(Artisan::output());
+});
 
     // 🏠 Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
