@@ -33,15 +33,16 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/__migrate', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return nl2br(Artisan::output());
+});
+
 // ============================
 // 📦 Routes خاصة بالمستخدم (User Panel)
 // ============================
 Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
 
-   Route::get('/__migrate', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    return nl2br(Artisan::output());
-});
 
     // 🏠 Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
