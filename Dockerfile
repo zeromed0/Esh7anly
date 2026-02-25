@@ -34,4 +34,4 @@ RUN php artisan config:clear \
  && php artisan route:clear \
  && php artisan view:clear
 
-EXPOSE 80
+CMD apache2-foreground
