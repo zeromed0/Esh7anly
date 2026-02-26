@@ -15,10 +15,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('avatar')->nullable(); // صورة المستخدم
             $table->decimal('balance', 12, 2)->default(0); // رصيد المحفظة
-            $table->boolean('is_verified')->default(false); // حالة التوثيق
+            $table->boolean('is_premium')->default(false); // حالة التوثيق
             $table->boolean('is_banned')->default(false); // حالة الحظر
+            $table->boolean('is_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

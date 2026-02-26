@@ -163,31 +163,4 @@ Route::delete('/wallet-vouchers/{id}', [AdminWalletVoucherController::class, 'de
 
 
 
-
-use Illuminate\Support\Facades\Artisan;
-
-Route::get('/__fix-migrations', function () {
-    // حماية بسيطة بكلمة مرور
-    $password = request('key'); // مثال: https://yourapp.com/__fix-migrations?key=MYSECRET
-    if ($password !== 'MYSECRET') {
-        abort(403, 'Unauthorized');
-    }
-
-    // إصلاح الأعمدة المكررة (مثال: عمود avatar)
-    if (!\Schema::hasColumn('users', 'avatar')) {
-        \Schema::table('users', function ($table) {
-            $table->string('avatar')->nullable();
-        });
-    }
-
-    // تشغيل كل الهجرات المعلقة
-    Artisan::call('migrate', ['--force' => true]);
-
-    // يمكن إضافة Seeder إذا أردت:
-    // Artisan::call('db:seed', ['--class' => 'UserSeeder', '--force' => true]);
-
-    return '✅ Migrations fixed and applied successfully!';
-});
-
-
 require __DIR__.'/auth.php';

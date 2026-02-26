@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -10,11 +11,14 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
+            $table->text('description')->nullable(); // ✅ تمت الإضافة
             $table->string('image')->nullable();
+            $table->enum('type', ['topup', 'voucher'])->default('topup');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
+
     public function down(): void {
         Schema::dropIfExists('games');
     }
