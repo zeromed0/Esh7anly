@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -11,13 +12,14 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(Game::class)->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->enum('type', ['topup', 'voucher']);
+            $table->enum('type', ['topup', 'voucher'])->default('topup'); // ✅ default مضاف
             $table->decimal('price', 12, 2);
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
+
     public function down(): void {
         Schema::dropIfExists('offers');
     }
