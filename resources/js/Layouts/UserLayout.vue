@@ -16,8 +16,7 @@
 
         <!-- Logo -->
         <div class="flex items-center space-x-2 cursor-pointer" @click="go('/user/dashboard')">
-          <img src="/images/logo.png" alt="Logo" class="h-12 w-auto" />
-          <span class="font-bold text-lg sm:text-xl">2Sh7anli</span>
+          <img src="/images/logo1.png" alt="Logo" class="h-12 w-auto" />
         </div>
       </div>
         

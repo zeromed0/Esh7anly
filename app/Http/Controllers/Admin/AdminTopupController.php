@@ -98,7 +98,8 @@ class AdminTopupController extends Controller
     }
 
     // تغيير حالة تفعيل اللعبة
-public function toggleGameActive(Game $game)
+
+public function toggleGame(Game $game)
 {
     $game->is_active = !$game->is_active;
     $game->save();
@@ -106,8 +107,7 @@ public function toggleGameActive(Game $game)
     return back();
 }
 
-// تغيير حالة تفعيل العرض
-public function toggleOfferActive(Offer $offer)
+public function toggleOffer(Offer $offer)
 {
     $offer->is_active = !$offer->is_active;
     $offer->save();

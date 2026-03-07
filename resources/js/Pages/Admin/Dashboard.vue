@@ -1,59 +1,73 @@
+
 <template>
   <AdminLayout>
+
     <!-- ترحيب الأدمن -->
-    <div class="mt-6 mb-6 px-6 text-center sm:text-right">
-      <h2 class="text-2xl md:text-3xl font-bold text-gray-700">
+    <div class="mt-6 mb-8 px-6 text-center sm:text-right">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-800 tracking-wide">
         مرحبا لك أيها الأدمن، {{ adminName }}
       </h2>
     </div>
 
-    <!-- محتوى Dashboard -->
-    <main class="px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+    <!-- Dashboard Grid -->
+    <main class="px-4 sm:px-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+
       <!-- Orders -->
       <button
         @click="goTo('/admin/orders')"
-        class="bg-white shadow-md md:shadow-lg rounded-2xl p-5 flex flex-col items-center justify-center hover:shadow-xl hover:bg-blue-50 transition duration-300"
+        class="dashboard-btn hover:bg-blue-50"
       >
-        <ShoppingCart class="w-12 h-12 text-blue-600 mb-2" />
-        <span class="text-gray-700 font-semibold text-sm md:text-base">Orders</span>
+        <ShoppingCart class="icon text-blue-600" />
+        <span>Orders</span>
       </button>
 
       <!-- Top Ups -->
       <button
         @click="goTo('/admin/topups')"
-        class="bg-white shadow-md md:shadow-lg rounded-2xl p-5 flex flex-col items-center justify-center hover:shadow-xl hover:bg-yellow-50 transition duration-300"
+        class="dashboard-btn hover:bg-yellow-50"
       >
-        <Bolt class="w-12 h-12 text-yellow-500 mb-2" />
-        <span class="text-gray-700 font-semibold text-sm md:text-base">Top Ups</span>
+        <Bolt class="icon text-yellow-500" />
+        <span>Top Ups</span>
       </button>
 
       <!-- Vouchers -->
       <button
         @click="goTo('/admin/vouchers')"
-        class="bg-white shadow-md md:shadow-lg rounded-2xl p-5 flex flex-col items-center justify-center hover:shadow-xl hover:bg-green-50 transition duration-300"
+        class="dashboard-btn hover:bg-green-50"
       >
-        <Ticket class="w-12 h-12 text-green-500 mb-2" />
-        <span class="text-gray-700 font-semibold text-sm md:text-base">Vouchers</span>
+        <Ticket class="icon text-green-500" />
+        <span>Vouchers</span>
       </button>
 
       <!-- Wallet Vouchers -->
       <button
         @click="goTo('/admin/wallet-vouchers')"
-        class="bg-white shadow-md md:shadow-lg rounded-2xl p-5 flex flex-col items-center justify-center hover:shadow-xl hover:bg-purple-50 transition duration-300"
+        class="dashboard-btn hover:bg-purple-50"
       >
-        <Wallet class="w-12 h-12 text-purple-500 mb-2" />
-        <span class="text-gray-700 font-semibold text-sm md:text-base">Wallet Vouchers</span>
+        <Wallet class="icon text-purple-500" />
+        <span>Wallet Vouchers</span>
       </button>
 
       <!-- Users -->
       <button
         @click="goTo('/admin/users')"
-        class="bg-white shadow-md md:shadow-lg rounded-2xl p-5 flex flex-col items-center justify-center hover:shadow-xl hover:bg-red-50 transition duration-300"
+        class="dashboard-btn hover:bg-red-50"
       >
-        <User class="w-12 h-12 text-red-500 mb-2" />
-        <span class="text-gray-700 font-semibold text-sm md:text-base">Users</span>
+        <User class="icon text-red-500" />
+        <span>Users</span>
       </button>
+
+      <!-- Settings -->
+      <button
+        @click="goTo('/admin/settings')"
+        class="dashboard-btn hover:bg-gray-100"
+      >
+        <Settings class="icon text-gray-600" />
+        <span>Settings</span>
+      </button>
+
     </main>
+
   </AdminLayout>
 </template>
 
@@ -61,7 +75,7 @@
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { ShoppingCart, Bolt, Ticket, Wallet, User } from 'lucide-vue-next'
+import { ShoppingCart, Bolt, Ticket, Wallet, User, Settings } from 'lucide-vue-next'
 
 const adminName = ref('Admin')
 
@@ -75,20 +89,43 @@ body {
   direction: rtl;
 }
 
-/* تحسين حجم الأزرار على الهاتف */
-button {
-  font-weight: bold;
-  font-size: 14px;
+/* تصميم موحد للأزرار */
+.dashboard-btn {
+  background: white;
+  border-radius: 18px;
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+  transition: all 0.25s ease;
 }
 
+.dashboard-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+}
+
+/* تكبير بسيط للشاشات الكبيرة */
 @media (min-width: 768px) {
-  button {
-    font-size: 16px;
+  .dashboard-btn {
+    font-size: 14px;
+    padding: 20px 14px;
   }
-}
 
-/* الظلال والتحولات */
-button:hover {
-  transform: translateY(-2px);
+  .icon {
+    width: 32px;
+    height: 32px;
+  }
 }
 </style>

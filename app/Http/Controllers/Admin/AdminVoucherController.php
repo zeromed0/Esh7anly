@@ -9,6 +9,7 @@ use App\Models\Offer;
 use App\Models\VoucherCode;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class AdminVoucherController extends Controller
 {
@@ -112,16 +113,26 @@ public function getVoucherCodes(Offer $offer)
 }
 
 // إضافة كود جديد (تبقى كما هي)
+
 public function storeVoucherCode(Request $request, Offer $offer)
 {
+    // التحقق من وجود بيانات
     $request->validate([
-        'code' => 'required|string|max:255',
+        'codes' => 'required|string', // سلسلة تحتوي على أكواد مفصولة بأسطر
     ]);
 
-    $code = $offer->voucherCodes()->create(['code' => $request->code]);
+    // تقسيم الأكواد على حسب السطر وإزالة الفراغات
+    $codes = array_filter(array_map('trim', explode("\n", $request->codes)));
 
-    // لو أردت إرجاع الكود الجديد كـ JSON:
-    return response()->json(['code' => $code]);
+    $addedCodes = [];
+
+    foreach ($codes as $code) {
+        // إضافة الكود للعرض
+        $addedCodes[] = $offer->voucherCodes()->create(['code' => $code]);
+    }
+
+    // إرجاع JSON للأكواد الجديدة
+    return redirect()->back();
 }
 
 // تعديل و حذف الأكواد تبقى كما كتبتها

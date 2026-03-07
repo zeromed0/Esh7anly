@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AdminWalletVoucherController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminSettingsController;
 
 // User Controllers
 use App\Http\Controllers\User\DashboardController;
@@ -42,6 +43,8 @@ Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(fu
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+        Route::middleware(['auth','not.banned'])->group(function () {
+
     // 🔝 TopUp
     Route::get('/topup', [TopupController::class, 'index'])->name('topup');
     Route::post('/topup', [TopupController::class, 'store'])->name('topup.store');
@@ -68,6 +71,9 @@ Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.st
 
     // Change password
     Route::patch('/user/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+});
+
+    
 
     Route::post('/set-language', function (Request $request) {
     $locale = $request->locale;
@@ -118,6 +124,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // حذف لعبة
     Route::delete('/topups/game/{game}', [AdminTopupController::class, 'destroyGame'])->name('topups.destroyGame');
 
+    Route::put('/topups/game/{game}/toggle', [AdminTopupController::class, 'toggleGame']);
+Route::put('/topups/offer/{offer}/toggle', [AdminTopupController::class, 'toggleOffer']);
+
     // ---------- العروض ----------
     // إضافة عرض جديد
     Route::post('/topups/offer', [AdminTopupController::class, 'storeOffer'])->name('topups.storeOffer');
@@ -155,9 +164,19 @@ Route::post('/vouchers/offer/{offer}/toggle-active', [AdminVoucherController::cl
 Route::get('/wallet-vouchers', [AdminWalletVoucherController::class, 'index']);
 Route::post('/wallet-vouchers', [AdminWalletVoucherController::class, 'store']);
 Route::delete('/wallet-vouchers/{id}', [AdminWalletVoucherController::class, 'destroy']);
+// Users
+    Route::get('/users', [AdminUserController::class, 'index']);
 
-    // Users
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+    Route::post('/user/{user}/toggle-ban', [AdminUserController::class, 'toggleBan']);
+    Route::post('/user/{user}/toggle-premium', [AdminUserController::class, 'togglePremium']);
+    Route::post('/user/{user}/update-balance', [AdminUserController::class, 'updateBalance']);
+    Route::post('/user/{user}/update-note', [AdminUserController::class, 'updateNote']);
+
+    Route::get('/user/{user}/activity', [AdminUserController::class, 'activity']);
+
+    Route::get('/settings', [AdminSettingsController::class, 'index']);
+    Route::post('/settings', [AdminSettingsController::class, 'update']);
+
 });
 
 

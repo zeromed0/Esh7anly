@@ -9,17 +9,23 @@ use App\Models\Game;
 use App\Models\Offer;
 use App\Models\Order;
 use App\Models\Transaction;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 
 class TopupController extends Controller
 {
     public function index()
     {
+        // جلب جميع الألعاب من نوع topup مع العروض المرتبطة
         $games = Game::where('type', 'topup')->with('offers')->get();
 
+        // جلب الضريبة من جدول الإعدادات
+        $taxPercent = Setting::first()?->tax_percent ?? 0;
+
         return Inertia::render('Topup', [
-            'games' => $games,
-            'user' => Auth::user(),
+            'games'       => $games,
+            'user'        => Auth::user(),
+            'tax_percent' => (float)$taxPercent,
         ]);
     }
 
@@ -33,37 +39,80 @@ class TopupController extends Controller
         ]);
 
         $user = Auth::user();
-        $offer = Offer::findOrFail($request->offer_id);
-        $total = $offer->price * $request->quantity;
 
-        // فحص الرصيد
+        // تعريف اللعبة والعرض بشكل صحيح
+        $game = Game::findOrFail($request->game_id);
+        $offer = Offer::findOrFail($request->offer_id);
+
+        // التأكد أن اللعبة والعرض مفعلان
+        if (!$game->is_active || !$offer->is_active) {
+            return back()->withErrors(['error' => 'هذا العرض أو اللعبة غير مفعل.']);
+        }
+
+        // جلب الضريبة
+        $taxPercent = Setting::get('tax_percent', 10); // 10% افتراضي
+
+        // =====================
+        // حساب المبلغ والضريبة والمجموع النهائي
+        // =====================
+        $baseTotal = $offer->price * $request->quantity;
+        $tax = !$user->is_premium_active ? $baseTotal * ($taxPercent / 100) : 0;
+        $total = $baseTotal + $tax;
+
+        // =====================
+        // التحقق من الرصيد والحد اليومي
+        // =====================
+        $dailyLimit = Setting::get('daily_limit_amount', 30000);
+        $dailyHours = Setting::get('daily_limit_hours', 24);
+
+        $spentLastHours = Order::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subHours($dailyHours))
+            ->where('status', 'done')
+            ->sum('total_price');
+
+        if (($spentLastHours + $total) > $dailyLimit) {
+            $user->is_banned = true;
+            $user->save();
+
+            return back()->withErrors([
+                'wallet_balance' => "❌ لقد تجاوزت الحد اليومي المسموح ({$dailyLimit} MRU). تم حظر حسابك مؤقتًا."
+            ]);
+        }
+
         if ($user->balance < $total) {
             return back()->withErrors(['wallet_balance' => 'رصيدك غير كافٍ لإتمام العملية.']);
         }
 
-        // خصم الرصيد
+        if (!Setting::get('topup_enabled', true)) {
+            return back()->withErrors(['error' => 'عمليات الشحن مغلقة حالياً.']);
+        }
+
+        // =====================
+        // خصم الرصيد وإنشاء الطلب
+        // =====================
         $user->balance -= $total;
         $user->save();
 
-        // إنشاء الطلب
         $order = Order::create([
             'user_id'     => $user->id,
-            'game_id'     => $request->game_id,
-            'offer_id'    => $request->offer_id,
+            'game_id'     => $game->id,
+            'offer_id'    => $offer->id,
             'type'        => 'topup',
             'player_id'   => $request->player_id,
             'quantity'    => $request->quantity,
             'total_price' => $total,
+            'tax'         => $tax,
             'status'      => 'pending',
         ]);
 
-        // ⭐ تسجيل معاملة الشحن
+        // تسجيل المعاملة
         Transaction::create([
             'user_id'       => $user->id,
             'order_id'      => $order->id,
             'type'          => 'topup',
             'amount'        => -$total,
             'balance_after' => $user->balance,
+            'details'       => 'Topup purchase' . ($tax > 0 ? " (+tax $tax)" : ''),
         ]);
 
         return back()->with('success', '✅ تم إرسال طلبك وهو الآن قيد المراجعة.');

@@ -12,10 +12,14 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password',
-        'balance','is_premium', 'is_banned',
+        'balance','is_premium','premium_until', 'is_banned',
     ];
 
     protected $hidden = ['password', 'remember_token'];
+
+    protected $casts = [
+    'premium_until' => 'datetime',
+];
 
     // 🧩 العلاقات
     public function orders() {
@@ -41,4 +45,11 @@ class User extends Authenticatable
     public function activityLogs() {
         return $this->hasMany(ActivityLog::class);
     }
+
+
+
+public function getIsPremiumActiveAttribute()
+{
+    return $this->premium_until && $this->premium_until->isFuture();
+}
 }

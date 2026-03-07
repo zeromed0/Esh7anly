@@ -1,3 +1,4 @@
+
 <template>
   <AdminLayout>
     <div class="p-4 sm:p-6 bg-gray-50 min-h-screen">
@@ -6,14 +7,39 @@
 
       <!-- بحث / فلترة -->
       <div class="flex flex-col sm:flex-row gap-2 mb-4 items-start sm:items-center">
-        <input v-model="search" @input="filterOrders" placeholder="بحث..." class="border p-2 rounded w-full sm:w-1/3"/>
-        <select v-model="statusFilter" @change="filterOrders" class="border p-2 rounded w-full sm:w-1/4">
+        
+        <!-- البحث -->
+        <input 
+          v-model="search" 
+          @input="filterOrders" 
+          placeholder="بحث برقم الطلب أو الإيميل..." 
+          class="border p-2 rounded w-full sm:w-1/3"
+        />
+
+        <!-- فلترة الحالة -->
+        <select 
+          v-model="statusFilter" 
+          @change="filterOrders" 
+          class="border p-2 rounded w-full sm:w-1/4">
           <option value="">الكل</option>
           <option value="pending">Pending</option>
           <option value="completed">Completed</option>
           <option value="rejected">Rejected</option>
         </select>
-        <button @click="reloadOrders" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition">
+
+        <!-- فلترة النوع -->
+        <select 
+          v-model="typeFilter" 
+          @change="filterOrders" 
+          class="border p-2 rounded w-full sm:w-1/4">
+          <option value="">كل الأنواع</option>
+          <option value="topup">TopUp</option>
+          <option value="voucher">Voucher</option>
+        </select>
+
+        <button 
+          @click="reloadOrders" 
+          class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition">
           تحديث
         </button>
       </div>
@@ -29,6 +55,7 @@
               <th class="px-2 py-2">Offer</th>
               <th class="px-2 py-2">Player ID</th>
               <th class="px-2 py-2 text-right">Amount</th>
+              <th class="px-2 py-2 text-center">Type</th>
               <th class="px-2 py-2 text-center">Status</th>
               <th class="px-2 py-2 text-center">Actions</th>
             </tr>
@@ -36,7 +63,7 @@
 
           <tbody>
             <tr v-for="(order, index) in filteredOrders" :key="order.id" class="border-b hover:bg-gray-50 transition">
-              <td class="px-2 py-2">{{ index + 1 }}</td>
+              <td class="px-2 py-2">{{ order.id }}</td>
               <td class="px-2 py-2">{{ order.user?.name || 'N/A' }}</td>
               <td class="px-2 py-2">{{ order.user?.email || 'N/A' }}</td>
               <td class="px-2 py-2">{{ order.game?.name || 'N/A' }}</td>
@@ -45,6 +72,14 @@
               <td class="px-2 py-2 text-right text-blue-700 font-semibold">
                 {{ formatCurrency(order.total_price || order.price) }}
               </td>
+
+              <!-- النوع -->
+              <td class="px-2 py-2 text-center">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">
+                  {{ order.type || 'topup' }}
+                </span>
+              </td>
+
               <td class="px-2 py-2 text-center">
                 <span
                   class="px-3 py-1 rounded-full text-xs font-semibold"
@@ -57,6 +92,7 @@
                   {{ order.status }}
                 </span>
               </td>
+
               <td class="px-2 py-2 text-center space-x-1 sm:space-x-2 flex flex-col sm:flex-row justify-center">
                 <button
                   @click="update(order.id, 'completed', order.status)"
@@ -91,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useForm, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
@@ -99,6 +135,8 @@ const props = defineProps({ orders: Array })
 
 const search = ref('')
 const statusFilter = ref('')
+const typeFilter = ref('')
+
 const orders = ref([...props.orders])
 const filteredOrders = ref([...orders.value])
 
@@ -118,8 +156,12 @@ const update = (id, status, currentStatus) => {
   form.post('/admin/orders/' + id + '/status', {
     preserveScroll: true,
     onSuccess: () => {
-      message.value = status === 'completed' ? '✅ Order completed.' : '⚠️ Order rejected and refunded.'
-      messageType.value = status === 'completed' ? 'text-green-600' : 'text-yellow-600'
+      message.value = status === 'completed'
+        ? '✅ Order completed.'
+        : '⚠️ Order rejected and refunded.'
+      messageType.value = status === 'completed'
+        ? 'text-green-600'
+        : 'text-yellow-600'
       setTimeout(() => (message.value = ''), 3000)
       reloadOrders()
     },
@@ -135,9 +177,21 @@ const formatCurrency = (value) =>
 
 const filterOrders = () => {
   filteredOrders.value = orders.value.filter(o => {
-    const matchesSearch = Object.values(o).some(val => String(val).toLowerCase().includes(search.value.toLowerCase()))
-    const matchesStatus = !statusFilter.value || o.status === statusFilter.value
-    return matchesSearch && matchesStatus
+
+    const searchLower = search.value.toLowerCase()
+
+    const matchesSearch =
+      !search.value ||
+      String(o.id).includes(searchLower) ||
+      (o.user?.email && o.user.email.toLowerCase().includes(searchLower))
+
+    const matchesStatus =
+      !statusFilter.value || o.status === statusFilter.value
+
+    const matchesType =
+      !typeFilter.value || o.type === typeFilter.value
+
+    return matchesSearch && matchesStatus && matchesType
   })
 }
 

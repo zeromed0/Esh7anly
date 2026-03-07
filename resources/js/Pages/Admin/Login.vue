@@ -5,7 +5,7 @@
       <!-- Header -->
       <div class="flex flex-col items-center mb-8">
         <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center shadow-lg mb-4">
-          <img src="/logo.png" alt="Admin Logo" class="w-12 h-12" />
+          <img src="/images/logo1.png" alt="Logo" class="w-18 h-15" />
         </div>
         <h1 class="text-3xl font-extrabold text-gray-800 mb-1">تسجيل دخول الأدمن</h1>
         <p class="text-gray-500 text-sm text-center">يرجى إدخال بيانات الدخول الخاصة بك للوصول إلى لوحة التحكم</p>

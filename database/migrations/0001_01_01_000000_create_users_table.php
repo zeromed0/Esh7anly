@@ -19,6 +19,8 @@ return new class extends Migration
             $table->boolean('is_premium')->default(false); // حالة التوثيق
             $table->boolean('is_banned')->default(false); // حالة الحظر
             $table->boolean('is_admin')->default(false);
+            $table->timestamp('premium_until')->nullable();
+            $table->text('admin_note')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

@@ -21,4 +21,12 @@ class VoucherCode extends Model
     public function order() {
         return $this->hasMany(Order::class);
     }
+
+    public function rules()
+{
+    return [
+        'codes' => 'required|array', // مصفوفة الأكواد
+        'codes.*' => 'required|string|distinct', // كل عنصر فيها نص فريد
+    ];
+}
 }
