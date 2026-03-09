@@ -38,7 +38,7 @@
 
           <img
             :src="game.image || '/images/default-game.jpg'"
-            class="w-10 h-10 rounded-full object-cover mb-1"
+            class="w-10 h-10 rounded-xl object-cover mb-1"
           />
           <p class="text-xs font-semibold text-gray-700 text-center truncate w-full">
             {{ game.name }}
@@ -52,12 +52,12 @@
         <p class="text-gray-600 text-sm mb-4">{{ selectedGame.description || "No description available." }}</p>
 
         <!-- العروض -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+        <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
           <div
             v-for="offer in selectedGame.offers"
             :key="offer.id"
             @click="selectOffer(offer)"
-            class="relative border rounded-xl p-3 text-center transition"
+            class="relative border rounded-xl p-2 text-center transition"
             :class="[
               selectedOffer && selectedOffer.id === offer.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200',
               (!offer.is_active || !selectedGame.is_active || offer.stock === 0) ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'
@@ -85,11 +85,11 @@
 
             <img
               :src="offer.image || '/images/default-offer.jpg'"
-              class="w-16 h-16 rounded-full object-cover mx-auto mb-2"
+              class="w-12 h-12 rounded-xl object-cover mx-auto mb-1"
             />
             <p class="font-semibold text-blue-500 text-sm">{{ offer.name }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ formatCurrency(offer.price) }}</p>
-            <p v-if="offer.stock > 0" class="text-xs text-gray-400 mt-1">{{ offer.stock }} codes left</p>
+            <p class="text-xs text-gray-500 mt-">{{ formatCurrency(offer.price) }}</p>
+            <p v-if="offer.stock > 0" class="text-xs text-gray-400 mt-0">{{ offer.stock }} codes left</p>
           </div>
         </div>
 

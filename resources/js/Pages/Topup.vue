@@ -47,7 +47,7 @@
         <p class="text-gray-600 text-sm mb-4">{{ selectedGame.description || "No description available." }}</p>
 
         <!-- عروض الشحن -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+        <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
           <div
             v-for="offer in selectedGame.offers"
             :key="offer.id"
@@ -64,7 +64,7 @@
             >
               <span class="bg-red-600 text-white text-[10px] px-2 py-1 rounded-full">Disabled</span>
             </div>
-            <img :src="offer.image || '/images/default-offer.jpg'" class="w-16 h-16 rounded-full object-cover mx-auto mb-2"/>
+            <img :src="offer.image || '/images/default-offer.jpg'" class="w-12 h-12 rounded-xl object-cover mx-auto mb-1"/>
             <p class="font-semibold text-blue-500 text-sm">{{ offer.name }}</p>
             <p class="text-xs text-gray-500 mt-1">{{ formatCurrency(offer.price) }}</p>
           </div>
