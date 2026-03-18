@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->integer('quantity')->default(1);
             $table->decimal('total_price', 12, 2);
             $table->enum('status', ['pending', 'completed', 'rejected'])->default('pending');
-            
+            $table->text('message')->nullable();
             $table->timestamps();
         });
     }

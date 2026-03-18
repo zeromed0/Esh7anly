@@ -161,6 +161,7 @@
   </UserLayout>
 </template>
 
+
 <script setup>
 import { ref, computed } from "vue"
 import { router } from "@inertiajs/vue3"
@@ -178,8 +179,8 @@ const quantity = ref(1)
 const message = ref("")
 const messageClass = ref("text-green-600")
 
-const purchasedCodes = ref([]) // مصفوفة الأكواد التي تم الحصول عليها
-const showPurchasedCodes = ref(false) // تتحكم في ظهور الـ modal
+const purchasedCodes = ref([])
+const showPurchasedCodes = ref(false)
 
 const taxAmount = computed(() => {
   if (!selectedOffer.value) return 0
@@ -211,45 +212,51 @@ const selectOffer = (offer) => {
 }
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "MRU" }).format(value || 0)
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "MRU"
+  }).format(value || 0)
 
-const submitVoucherOrder = async () => {
+const submitVoucherOrder = () => {
+
   if (!selectedGame.value || !selectedOffer.value) {
     message.value = "Please select a game and offer first."
     messageClass.value = "text-red-600"
     return
   }
 
-  try {
-    await router.post("/user/vouchers", {
-      game_id: selectedGame.value.id,
-      offer_id: selectedOffer.value.id,
-      quantity: quantity.value,
-    }, {
-      onSuccess: (page) => {
-        // الأكواد المستلمة من السيرفر
-        purchasedCodes.value = page.props.codes || []
-        showPurchasedCodes.value = true
+  router.post("/user/vouchers", {
+    game_id: selectedGame.value.id,
+    offer_id: selectedOffer.value.id,
+    quantity: quantity.value
+  }, {
 
-        // إعادة ضبط الكمية والعرض المحدد
-        quantity.value = 1
-        selectedOffer.value = null
+    onSuccess: (page) => {
 
-        message.value = ""
-      },
-      onError: (errors) => {
-        message.value = errors.error ?? "Failed to process your request."
-        messageClass.value = "text-red-600"
+      purchasedCodes.value = page.props.codes || []
+      showPurchasedCodes.value = true
+
+      quantity.value = 1
+      selectedOffer.value = null
+
+      message.value = ""
+    },
+
+    onError: (errors) => {
+
+      if (errors.limit) {
+        message.value = "تم الوصول للحد اليومي يرجى توثيق حسابك"
       }
-    })
-  } catch (e) {
-    message.value = "Something went wrong."
-    messageClass.value = "text-red-600"
-  }
+      else if (errors.error) {
+        message.value = errors.error
+      }
+      else {
+        message.value = "Failed to process your request."
+      }
+
+      messageClass.value = "text-red-600"
+    }
+
+  })
 }
 </script>
-
-<style scoped>
-@keyframes fadeIn { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
-.animate-fadeIn { animation: fadeIn 0.3s ease; }
-</style>

@@ -158,6 +158,7 @@
   </UserLayout>
 </template>
 
+
 <script setup>
 import { ref, computed } from "vue"
 import { router } from "@inertiajs/vue3"
@@ -176,14 +177,17 @@ const message = ref("")
 const messageClass = ref("text-green-600")
 const showModal = ref(false)
 
-// حساب الضريبة والمجموع النهائي
 const taxPercent = computed(() => Number(props.tax_percent ?? 0))
-const taxAmount = computed(() =>
-  selectedOffer.value ? Number(selectedOffer.value.price) * (taxPercent.value / 100) : 0
-)
-const finalPrice = computed(() =>
-  selectedOffer.value ? Number(selectedOffer.value.price) + taxAmount.value : 0
-)
+
+const taxAmount = computed(() => {
+  if (!selectedOffer.value) return 0
+  return Number(selectedOffer.value.price) * (taxPercent.value / 100)
+})
+
+const finalPrice = computed(() => {
+  if (!selectedOffer.value) return 0
+  return Number(selectedOffer.value.price) + taxAmount.value
+})
 
 const selectGame = (game) => {
   if (!game.is_active) return
@@ -193,7 +197,7 @@ const selectGame = (game) => {
 }
 
 const selectOffer = (offer) => {
-  if (!offer.is_active || !selectedGame.value?.is_active) return
+  if (!offer.is_active) return
   selectedOffer.value = offer
   message.value = ""
 }
@@ -206,7 +210,10 @@ const resetSelection = () => {
 }
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "MRU" }).format(value || 0)
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "MRU"
+  }).format(value || 0)
 
 const closeModal = () => {
   showModal.value = false
@@ -214,44 +221,50 @@ const closeModal = () => {
   playerId.value = ""
 }
 
-const submitOrder = async () => {
+const submitOrder = () => {
+
   if (!selectedGame.value || !selectedOffer.value) {
     message.value = "Please select a game and offer first."
     messageClass.value = "text-red-600"
     return
   }
-  if (!selectedGame.value.is_active || !selectedOffer.value.is_active) {
-    message.value = "This game or offer is currently disabled."
-    messageClass.value = "text-red-600"
-    return
-  }
+
   if (!playerId.value) {
     message.value = "Please enter your player ID."
     messageClass.value = "text-red-600"
     return
   }
 
-  try {
-    // ارسال الطلب إلى السيرفر
-    await router.post("/user/topup", {
-      game_id: selectedGame.value.id,
-      offer_id: selectedOffer.value.id,
-      player_id: playerId.value,
-      quantity: 1
-    })
-    showModal.value = true
-    message.value = ""
-  } catch (e) {
-    message.value = "حدث خطأ أثناء تنفيذ الطلب."
-    messageClass.value = "text-red-600"
-  }
+  router.post("/user/topup", {
+    game_id: selectedGame.value.id,
+    offer_id: selectedOffer.value.id,
+    player_id: playerId.value,
+    quantity: 1
+  }, {
+
+    onSuccess: () => {
+      showModal.value = true
+      message.value = ""
+    },
+
+    onError: (errors) => {
+
+      if (errors.limit) {
+        message.value = "تم الوصول للحد اليومي يرجى توثيق حسابك"
+      }
+      else if (errors.wallet_balance) {
+        message.value = errors.wallet_balance
+      }
+      else if (errors.error) {
+        message.value = errors.error
+      }
+      else {
+        message.value = "حدث خطأ أثناء تنفيذ الطلب."
+      }
+
+      messageClass.value = "text-red-600"
+    }
+
+  })
 }
 </script>
-
-<style scoped>
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn { animation: fadeIn 0.3s ease; }
-</style>

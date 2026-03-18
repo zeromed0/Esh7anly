@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Transaction;
 use App\Models\Order;
-use App\Models\VoucherCode;
 
 class TransactionController extends Controller
 {
@@ -15,7 +13,12 @@ class TransactionController extends Controller
     {
         $user = auth()->user();
 
-        // معاملات Wallet
+        /*
+        |--------------------------------
+        | Wallet Transactions
+        |--------------------------------
+        */
+
         $walletTx = Transaction::where('user_id', $user->id)
             ->where('type', 'wallet')
             ->latest()
@@ -32,11 +35,17 @@ class TransactionController extends Controller
                     'balance_after' => $tx->balance_after,
                     'codes' => [],
                     'player_id' => '-',
+                    'message' => $tx->details ?? null,
                     'created_at' => $tx->created_at,
                 ];
             });
 
-        // معاملات orders (voucher + topup)
+        /*
+        |--------------------------------
+        | Orders Transactions
+        |--------------------------------
+        */
+
         $orderTx = Order::where('user_id', $user->id)
             ->with(['game', 'offer', 'voucherCodes'])
             ->latest()
@@ -47,7 +56,7 @@ class TransactionController extends Controller
                     ->pluck('code')
                     ->toArray();
 
-                // جلب آخر رصيد بعد تنفيذ هذا الطلب
+                // جلب آخر رصيد بعد الطلب
                 $lastBalance = Transaction::where('user_id', $order->user_id)
                     ->where('created_at', '<=', $order->created_at)
                     ->latest()
@@ -64,11 +73,17 @@ class TransactionController extends Controller
                     'balance_after' => $lastBalance,
                     'codes' => $codes,
                     'player_id' => $order->player_id,
+                    'message' => $order->message, // ← هنا الحل
                     'created_at' => $order->created_at,
                 ];
             });
 
-        // دمج الكل
+        /*
+        |--------------------------------
+        | Merge Transactions
+        |--------------------------------
+        */
+
         $transactions = $walletTx
             ->concat($orderTx)
             ->sortByDesc('created_at')
@@ -76,7 +91,7 @@ class TransactionController extends Controller
 
         return Inertia::render('Transactions', [
             'user' => $user,
-            'transactions' => $transactions,
+            'transactions' => $transactions
         ]);
     }
 }

@@ -75,6 +75,22 @@ public function store(Request $request)
         return back()->withErrors(['error' => 'رصيدك غير كافٍ لإتمام العملية.']);
     }
 
+    if ($user->verification_status !== 'verified') {
+
+    $todayTotal = Order::where('user_id', $user->id)
+        ->whereDate('created_at', now())
+        ->whereIn('status', ['pending','completed'])
+        ->sum('total_price');
+
+    if (($todayTotal + $total) > 1500) {
+
+        return back()->withErrors([
+            'limit' => '❌ الحد اليومي للمستخدم غير الموثق هو 1500 MRU. يرجى توثيق حسابك.'
+        ]);
+
+    }
+}
+
     // خصم الرصيد
     $user->balance -= $total;
     $user->save();

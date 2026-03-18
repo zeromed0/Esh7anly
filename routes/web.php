@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminTopupController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\AdminVerificationController;
 
 // User Controllers
 use App\Http\Controllers\User\DashboardController;
@@ -22,6 +24,8 @@ use App\Http\Controllers\User\VoucherController;
 use App\Http\Controllers\User\WalletController;
 use App\Http\Controllers\User\TransactionController;
 use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\NotificationController;
+use App\Http\Controllers\User\VerificationController;
 
 // الصفحة الرئيسية
 Route::get('/', function () {
@@ -62,15 +66,42 @@ Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.st
 
     // 👤 Profile
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])
-        ->name('profile.avatar');
-    Route::post('/profile/identity', [ProfileController::class, 'uploadIdentity'])
-    ->name('profile.identity');
-        // Update name / basic profile
-    Route::patch('/user/profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    
+    // عرض صفحة التوثيق
 
-    // Change password
-    Route::patch('/user/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
+
+    // إرسال الصور للتوثيق
+    Route::post('/verification/upload', [VerificationController::class, 'upload'])->name('verification.upload');
+
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    // ============================
+// 📧 Email Verification (Inertia)
+// ============================
+
+// صفحة طلب التحقق
+Route::get('/email/verify', function () {
+    return Inertia::render('Auth/VerifyEmail');
+})->middleware('auth')->name('verification.notice');
+
+
+// عند الضغط على رابط الإيميل
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/dashboard'); // أو /user/dashboard
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+
+// إعادة إرسال الإيميل
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+
+    return back()->with('success', 'تم إرسال رابط التحقق ✅');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
 });
 
     
@@ -176,6 +207,18 @@ Route::delete('/wallet-vouchers/{id}', [AdminWalletVoucherController::class, 'de
 
     Route::get('/settings', [AdminSettingsController::class, 'index']);
     Route::post('/settings', [AdminSettingsController::class, 'update']);
+
+    // لوحة إدارة التوثيق
+
+    Route::get('/verifications', [AdminVerificationController::class, 'index'])
+        ->name('admin.verifications.index');
+
+    // PATCH → تحديث حالة التوثيق
+    Route::patch('/verifications/{user}', [AdminVerificationController::class, 'update'])
+        ->name('admin.verifications.update');
+
+
+
 
 });
 

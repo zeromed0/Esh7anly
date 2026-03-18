@@ -21,6 +21,16 @@ return new class extends Migration
             $table->boolean('is_admin')->default(false);
             $table->timestamp('premium_until')->nullable();
             $table->text('admin_note')->nullable();
+            $table->string('phone')->unique();
+            $table->timestamp('phone_verified_at')->nullable();
+
+            $table->string('national_id')->unique();
+
+            $table->string('id_card_image')->nullable();
+            $table->string('selfie_with_id_image')->nullable();
+
+            $table->enum('verification_status', ['unverified', 'pending', 'verified', 'rejected'])
+      ->default('unverified');
             $table->rememberToken();
             $table->timestamps();
         });

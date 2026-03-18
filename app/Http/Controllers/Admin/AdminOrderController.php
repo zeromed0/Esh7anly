@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\User;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,11 +13,11 @@ class AdminOrderController extends Controller
     public function index()
     {
         $orders = Order::with(['user', 'offer', 'game'])
-            ->orderBy('id', 'desc')
+            ->latest()
             ->get();
 
         return Inertia::render('Admin/Orders', [
-            'orders' => $orders,
+            'orders' => $orders
         ]);
     }
 
@@ -26,41 +25,84 @@ class AdminOrderController extends Controller
     {
         $order = Order::with('user')->findOrFail($id);
         $user = $order->user;
-        $status = $request->input('status');
 
-        // 🔒 منع تعديل الطلب بعد الاكتمال أو الرفض
+        $status = $request->status;
+        $message = $request->message;
+
+        // 🔒 منع تعديل الطلب بعد اكتماله
         if (in_array($order->status, ['completed', 'rejected'])) {
-            return back()->with('error', 'لا يمكن تعديل هذا الطلب بعد اكتماله أو رفضه.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Order already finalized'
+            ], 400);
         }
 
-        // ✅ عند الاكتمال فقط نغير الحالة
-        if ($status === 'completed') {
-            $order->status = 'completed';
-            $order->save();
-        }
+        /*
+        |-----------------------------------
+        | VALIDATE MESSAGE FOR TOPUP
+        |-----------------------------------
+        */
 
-        // 🔁 عند الرفض: إعادة المبلغ للمستخدم وتسجيل العملية
-        elseif ($status === 'rejected') {
-            // استخدم total_price إن وجد، وإلا السعر العادي
-            $refundAmount = $order->total_price ?? $order->price ?? 0;
+        if ($order->type === 'topup' && $status === 'completed') {
 
-            // أضف المبلغ إلى رصيد المستخدم
-            $user->balance += $refundAmount;
-            $user->save();
-
-            // سجل المعاملة في transactions
-            Transaction::create([
-                'user_id' => $user->id,
-                'amount' => $refundAmount,
-                'type' => 'refund',
-                'balance_after' => $user->balance,
+            $request->validate([
+                'message' => 'required|string|max:255'
             ]);
 
-            // حدّث حالة الطلب
+            $order->message = $message;
+        }
+
+        /*
+        |-----------------------------------
+        | ORDER COMPLETED
+        |-----------------------------------
+        */
+
+        if ($status === 'completed') {
+
+            $order->status = 'completed';
+            $order->save();
+
+            Transaction::create([
+                'user_id' => $user->id,
+                'order_id' => $order->id,
+                'amount' => -($order->total_price ?? $order->price ?? 0),
+                'type' => $order->type,
+                'balance_after' => $user->balance,
+                'player_id' => $order->player_id,
+                'message' => $order->message
+            ]);
+        }
+
+        /*
+        |-----------------------------------
+        | ORDER REJECTED + REFUND
+        |-----------------------------------
+        */
+
+        if ($status === 'rejected') {
+
+            $refund = $order->total_price ?? $order->price ?? 0;
+
+            $user->balance += $refund;
+            $user->save();
+
+            Transaction::create([
+                'user_id' => $user->id,
+                'order_id' => $order->id,
+                'amount' => $refund,
+                'type' => 'refund',
+                'balance_after' => $user->balance,
+                'message' => 'Order rejected refund'
+            ]);
+
             $order->status = 'rejected';
             $order->save();
         }
 
-        return back()->with('success', 'تم تحديث حالة الطلب بنجاح.');
+        return response()->json([
+            'success' => true,
+            'order' => $order
+        ]);
     }
 }

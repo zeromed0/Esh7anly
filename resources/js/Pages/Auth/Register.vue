@@ -46,6 +46,34 @@
           <InputError class="mt-2" :message="form.errors.email" />
         </div>
 
+        <!-- Phone (Mauritania only) -->
+        <div class="mt-4">
+          <InputLabel for="phone" value="Phone (Mauritania)" />
+          <TextInput
+            id="phone"
+            type="tel"
+            class="mt-1 block w-full"
+            v-model="form.phone"
+            required
+            placeholder="Ex: 22234567"
+          />
+          <InputError class="mt-2" :message="form.errors.phone" />
+        </div>
+
+        <!-- National ID -->
+        <div class="mt-4">
+          <InputLabel for="national_id" value="National ID" />
+          <TextInput
+            id="national_id"
+            type="text"
+            class="mt-1 block w-full"
+            v-model="form.national_id"
+            required
+            placeholder="12-digit ID"
+          />
+          <InputError class="mt-2" :message="form.errors.national_id" />
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
           <InputLabel for="password" value="Password" />
@@ -107,11 +135,27 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 const form = useForm({
   name: '',
   email: '',
+  phone: '',
+  national_id: '',
   password: '',
   password_confirmation: '',
 })
 
 const submit = () => {
+  // التحقق من رقم الهاتف موريتانيا فقط (8 أرقام يبدأ بـ 2 أو 6)
+  const phoneRegex = /^(2|3|4)\d{7}$/
+  if (!phoneRegex.test(form.phone)) {
+    form.setError('phone', 'Invalid Mauritanian phone number')
+    return
+  }
+
+  // التحقق من رقم التعريف الوطني (12 رقم)
+  const nationalIdRegex = /^\d{10}$/
+  if (!nationalIdRegex.test(form.national_id)) {
+    form.setError('national_id', 'National ID must be 10 digits')
+    return
+  }
+
   form.post(route('register'), {
     onFinish: () => form.reset('password', 'password_confirmation'),
   })
@@ -123,12 +167,10 @@ const submit = () => {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeDown {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fade-up { animation: fadeUp .6s ease; }
 .animate-fade-down { animation: fadeDown .6s ease; }
 </style>

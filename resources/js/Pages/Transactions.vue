@@ -1,3 +1,4 @@
+
 <template>
   <UserLayout :user="user">
     <div
@@ -52,7 +53,7 @@
           <!-- HEADER -->
           <div class="flex justify-between items-center mb-1">
             <p class="font-semibold text-gray-800 text-sm">
-              {{ getTypeLabel(tx.type) }} | <span >ID: {{ tx.id }}</span>
+              {{ getTypeLabel(tx.type) }} | <span>ID: {{ tx.id }}</span>
             </p>
 
             <span class="text-xs font-semibold px-2 py-1 rounded-full" :class="statusClass(tx.status)">
@@ -62,10 +63,13 @@
 
           <!-- BASIC INFO -->
           <p class="text-sm text-gray-700 font-medium truncate">
-            {{ tx.game_name }} — {{ tx.offer_name }}
+            {{ tx.game_name || 'N/A' }} — {{ tx.offer_name || 'N/A' }}
           </p>
 
-          <p class="text-sm mt-1 font-bold text-blue-600">{{ formatCurrency(tx.total_price) }} | <span > <strong>Quantity</strong>: {{ tx.quantity }}</span> </p>
+          <p class="text-sm mt-1 font-bold text-blue-600">
+            {{ formatCurrency(tx.total_price) }}
+            <span> | <strong>Quantity:</strong> {{ tx.quantity || 1 }}</span>
+          </p>
 
           <!-- DETAILS -->
           <details class="mt-2 bg-gray-50 rounded-lg p-3 text-sm">
@@ -75,11 +79,16 @@
               <p><strong>Balance After:</strong> {{ formatCurrency(tx.balance_after) }}</p>
               <p><strong>Date:</strong> {{ formatDate(tx.created_at) }}</p>
 
+              <!-- Player ID if TopUp -->
               <template v-if="tx.type === 'topup'">
-                <p><strong>Player ID:</strong> {{ tx.player_id }}</p>
+                <p><strong>Player ID:</strong> {{ tx.player_id || 'N/A' }}</p>
               </template>
 
-              <template v-else-if="tx.type === 'voucher'">
+              <!-- Display message if exists -->
+              <p v-if="tx.message"><strong> Order Info :</strong> {{ tx.message }}</p>
+
+              <!-- VOUCHER CODES -->
+              <template v-if="tx.type === 'voucher' && tx.codes?.length">
                 <ul class="space-y-1 mt-1">
                   <li
                     v-for="code in tx.codes"
@@ -94,6 +103,7 @@
                 </ul>
               </template>
 
+              <!-- WALLET -->
               <template v-else-if="tx.type === 'wallet'">
                 <p>Wallet recharge by admin.</p>
               </template>
@@ -128,7 +138,13 @@ const filteredTransactions = computed(() =>
 );
 
 const getTypeLabel = (type) =>
-  type === "topup" ? "🔼 Top-up" : type === "voucher" ? "🎟️ Voucher" : type === "wallet" ? "💰 Wallet" : type;
+  type === "topup"
+    ? "🔼 Top-up"
+    : type === "voucher"
+    ? "🎟️ Voucher"
+    : type === "wallet"
+    ? "💰 Wallet"
+    : type;
 
 const statusClass = (status) => ({
   "bg-green-100 text-green-700": status === "completed",
@@ -144,15 +160,16 @@ const statusCircle = (status) => ({
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const copy = (t) => navigator.clipboard.writeText(t);
-const formatCurrency = (v) => new Intl.NumberFormat("en-US", { style: "currency", currency: "MRU" }).format(v || 0);
-const formatDate = (date) => new Date(date).toLocaleString("fr-MR", { timeZone: "Africa/Nouakchott" });
+const formatCurrency = (v) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "MRU" }).format(v || 0);
+const formatDate = (date) =>
+  new Date(date).toLocaleString("fr-MR", { timeZone: "Africa/Nouakchott" });
 
 // Pull-to-refresh
 const pullStart = ref(0);
 const pullDistance = ref(0);
 const isRefreshing = ref(false);
 
-// طريقة كتابة transform بشكل أبسط
 const pullTransform = computed(() => ({
   transform: "translateY(" + pullDistance.value + "px)",
   transition: pullDistance.value === 0 ? "transform 0.2s ease-out" : "none",

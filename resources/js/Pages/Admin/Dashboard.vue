@@ -10,7 +10,7 @@
     </div>
 
     <!-- Dashboard Grid -->
-    <main class="px-4 sm:px-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <main class="px-4 sm:px-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
 
       <!-- Orders -->
       <button
@@ -57,6 +57,15 @@
         <span>Users</span>
       </button>
 
+      <!-- Verification -->
+      <button
+        @click="goTo('/admin/verifications')"
+        class="dashboard-btn hover:bg-indigo-50"
+      >
+        <ShieldCheck class="icon text-indigo-500" />
+        <span>Verification</span>
+      </button>
+
       <!-- Settings -->
       <button
         @click="goTo('/admin/settings')"
@@ -75,7 +84,7 @@
 import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { ShoppingCart, Bolt, Ticket, Wallet, User, Settings } from 'lucide-vue-next'
+import { ShoppingCart, Bolt, Ticket, Wallet, User, Settings, ShieldCheck } from 'lucide-vue-next'
 
 const adminName = ref('Admin')
 

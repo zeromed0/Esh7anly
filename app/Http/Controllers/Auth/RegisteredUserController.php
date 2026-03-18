@@ -16,7 +16,7 @@ use Inertia\Response;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * عرض صفحة التسجيل
      */
     public function create(): Response
     {
@@ -24,28 +24,35 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * تنفيذ التسجيل
      */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|string|email|max:255|unique:users',
+            'password'    => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone'       => 'required|string|max:20|unique:users',
+            'national_id' => 'required|string|max:50|unique:users',
         ]);
 
+        // إنشاء المستخدم
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name'                => $request->name,
+            'email'               => $request->email,
+            'phone'               => $request->phone,
+            'national_id'         => $request->national_id,
+            'verification_status' => 'unverified',
+            'password'            => Hash::make($request->password),
         ]);
 
+        // 🔥 إرسال إيميل التحقق
         event(new Registered($user));
 
+        // تسجيل الدخول
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // 🔥 التوجيه لصفحة التحقق بدل dashboard
+        return redirect()->route('verification.notice');
     }
 }

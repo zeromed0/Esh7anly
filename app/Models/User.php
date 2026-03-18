@@ -3,23 +3,44 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail; // ✅ مهم
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail // ✅ هنا التفعيل
 {
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password',
-        'balance','is_premium','premium_until', 'is_banned',
+        'name',
+        'email',
+        'password',
+        'phone',
+        'national_id',
+        'balance',
+        'is_premium',
+        'premium_until',
+        'is_banned',
+        'id_card_image',
+        'selfie_with_id_image',
+        'verification_status'
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = [
+        'password',
+        'remember_token'
+    ];
 
     protected $casts = [
-    'premium_until' => 'datetime',
-];
+        'premium_until' => 'datetime',
+        'email_verified_at' => 'datetime', // ✅ مهم
+    ];
+
+    // (اختياري لكن مفيد للـ Vue)
+    protected $appends = [
+        'is_premium_active',
+        'is_email_verified', // ✅ جديد
+    ];
 
     // 🧩 العلاقات
     public function orders() {
@@ -46,10 +67,15 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 
+    // ⭐ حالة البريميوم
+    public function getIsPremiumActiveAttribute()
+    {
+        return $this->premium_until && $this->premium_until > now();
+    }
 
-
-public function getIsPremiumActiveAttribute()
-{
-    return $this->premium_until && $this->premium_until->isFuture();
-}
+    // ⭐ حالة تأكيد الإيميل (مهم للـ Vue)
+    public function getIsEmailVerifiedAttribute()
+    {
+        return !is_null($this->email_verified_at);
+    }
 }
