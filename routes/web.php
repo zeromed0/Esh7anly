@@ -91,12 +91,15 @@ Route::get('/email/verify', function () {
 })->middleware('auth')->name('verification.notice');
 
 // عند الضغط على رابط الإيميل
-Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-    ->middleware(['auth', 'signed'])->name('verification.verify');
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill(); // هذا يتأكد من صحة الرابط والتوقيع
+
+    return redirect('/dashboard?verified=1');
+})->middleware(['auth', 'signed'])->name('verification.verify');
 
 // إعادة إرسال رابط التحقق
 Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
+    $request->user()->sendEmailVerificationNotification(); // يولد الرابط الصحيح تلقائيًا
     return back()->with('status', 'verification-link-sent');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 

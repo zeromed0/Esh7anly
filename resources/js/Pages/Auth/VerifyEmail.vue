@@ -31,20 +31,9 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
         </div>
 
         <form @submit.prevent="submit">
-            <div class="mt-4 flex items-center justify-between">
-                <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    إعادة إرسال بريد التحقق
-                </PrimaryButton>
-
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    تسجيل الخروج
-                </Link>
-            </div>
+    <PrimaryButton :disabled="form.processing">
+        إعادة إرسال بريد التحقق
+    </PrimaryButton>
         </form>
     </GuestLayout>
 </template>
