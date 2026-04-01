@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 
-class ResendVerificationController extends Controller
+class VerifyEmailController extends Controller
 {
     /**
      * إعادة توليد رابط التحقق وإرساله للمستخدم.
