@@ -27,6 +27,7 @@ use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\User\NotificationController;
 use App\Http\Controllers\User\VerificationController;
 
+
 // الصفحة الرئيسية
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -83,23 +84,23 @@ Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.st
 
 // صفحة طلب التحقق
 Route::get('/email/verify', function () {
-    return Inertia::render('Auth/VerifyEmail');
+    return Inertia::render('Auth/VerifyEmail', [
+        'status' => session('status')
+    ]);
 })->middleware('auth')->name('verification.notice');
-
 
 // عند الضغط على رابط الإيميل
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
+    $request->fulfill(); // يحقق البريد ويطلق الحدث
 
-    return redirect('/dashboard'); // أو /user/dashboard
+    return redirect('/dashboard')->with('verified', true);
 })->middleware(['auth', 'signed'])->name('verification.verify');
-
 
 // إعادة إرسال الإيميل
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
 
-    return back()->with('success', 'تم إرسال رابط التحقق ✅');
+    return back()->with('status', 'verification-link-sent'); // ليتعرف Vue على حالة الإرسال
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 });

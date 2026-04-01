@@ -1,27 +1,42 @@
 <?php
 
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Models\User;
 
-class VerifyEmailController extends Controller
+class ResendVerificationController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * إعادة توليد رابط التحقق وإرساله للمستخدم.
      */
-    public function __invoke(EmailVerificationRequest $request): RedirectResponse
+    public function resend($userId)
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        $user = User::findOrFail($userId);
+
+        if ($user->hasVerifiedEmail()) {
+            return "البريد الإلكتروني بالفعل مفعل.";
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
-        }
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',        // يجب أن يكون نفس اسم الراوت في web.php
+            Carbon::now()->addDay(),      // صلاحية الرابط: يوم كامل
+            [
+                'id' => $user->id,
+                'hash' => sha1($user->email),
+            ]
+        );
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        // إرسال الرابط عبر البريد (يمكنك تعديل قالب الرسالة)
+        Mail::raw("اضغط هنا لتأكيد بريدك: $verificationUrl", function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject('تأكيد البريد الإلكتروني');
+        });
+
+        return "تم إرسال رابط تحقق جديد بنجاح!";
     }
 }
