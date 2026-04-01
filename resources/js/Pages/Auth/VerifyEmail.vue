@@ -6,7 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
-    status: String, // يأتينا من session('status') في Route
+    status: String,
 });
 
 const form = useForm({});
@@ -20,10 +20,10 @@ const verificationLinkSent = computed(() => props.status === 'verification-link-
 
 <template>
     <GuestLayout>
-        <Head title="Email Verification" />
+        <Head title="تأكيد البريد الإلكتروني" />
 
         <div class="mb-4 text-sm text-gray-600">
-            شكراً لتسجيلك! قبل المتابعة، يرجى التحقق من بريدك الإلكتروني بالنقر على الرابط الذي أرسلناه إليك. إذا لم تستلم البريد، سنرسل لك آخر جديد.
+            شكراً لتسجيلك! قبل المتابعة، يرجى التحقق من بريدك الإلكتروني بالنقر على الرابط الذي أرسلناه إليك. إذا لم تستلم البريد، يمكنك إعادة إرسال الرابط.
         </div>
 
         <div v-if="verificationLinkSent" class="mb-4 text-sm font-medium text-green-600">

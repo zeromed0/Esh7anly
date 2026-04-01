@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 use App\Http\Controllers\Admin\AdminAuthController;
@@ -90,17 +91,13 @@ Route::get('/email/verify', function () {
 })->middleware('auth')->name('verification.notice');
 
 // عند الضغط على رابط الإيميل
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); // يحقق البريد ويطلق الحدث
+Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+    ->middleware(['auth', 'signed'])->name('verification.verify');
 
-    return redirect('/dashboard')->with('verified', true);
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-// إعادة إرسال الإيميل
+// إعادة إرسال رابط التحقق
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
-
-    return back()->with('status', 'verification-link-sent'); // ليتعرف Vue على حالة الإرسال
+    return back()->with('status', 'verification-link-sent');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 });
