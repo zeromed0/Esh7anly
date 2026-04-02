@@ -35,11 +35,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime', // ✅ مهم
     ];
 
-    // (اختياري لكن مفيد للـ Vue)
-    protected $appends = [
-        'is_premium_active',
-        'is_email_verified', // ✅ جديد
-    ];
+    
 
     // 🧩 العلاقات
     public function orders() {
