@@ -3,11 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Contracts\Auth\MustVerifyEmail; // ✅ مهم
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class User extends Authenticatable implements MustVerifyEmail // ✅ هنا التفعيل
+class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
@@ -71,11 +70,5 @@ class User extends Authenticatable implements MustVerifyEmail // ✅ هنا ال
     public function getIsPremiumActiveAttribute()
     {
         return $this->premium_until && $this->premium_until > now();
-    }
-
-    // ⭐ حالة تأكيد الإيميل (مهم للـ Vue)
-    public function getIsEmailVerifiedAttribute()
-    {
-        return !is_null($this->email_verified_at);
     }
 }

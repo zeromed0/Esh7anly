@@ -79,29 +79,6 @@ Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.st
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
-    // ============================
-// 📧 Email Verification (Inertia)
-// ============================
-
-// صفحة طلب التحقق
-Route::get('/email/verify', function () {
-    return Inertia::render('Auth/VerifyEmail', [
-        'status' => session('status')
-    ]);
-})->middleware('auth')->name('verification.notice');
-
-// عند الضغط على رابط الإيميل
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill(); // هذا يتأكد من صحة الرابط والتوقيع
-
-    return redirect('/dashboard?verified=1');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-// إعادة إرسال رابط التحقق
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification(); // يولد الرابط الصحيح تلقائيًا
-    return back()->with('status', 'verification-link-sent');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 });
 
