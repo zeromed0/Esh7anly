@@ -46,13 +46,9 @@ class RegisteredUserController extends Controller
             'password'            => Hash::make($request->password),
         ]);
 
-        // 🔥 إرسال إيميل التحقق
-        event(new Registered($user));
-
-        // تسجيل الدخول
         Auth::login($user);
 
-        // 🔥 التوجيه لصفحة التحقق بدل dashboard
-        return redirect()->route('verification.notice');
-    }
+    // ✅ توجيه مباشر للداشبورد
+    return redirect('/dashboard');
+}
 }

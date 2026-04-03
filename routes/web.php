@@ -42,7 +42,7 @@ Route::get('/', function () {
 // ============================
 // 📦 Routes خاصة بالمستخدم (User Panel)
 // ============================
-Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
+Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
 
 
     // 🏠 Dashboard

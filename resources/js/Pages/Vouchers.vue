@@ -76,7 +76,7 @@
             <!-- Out of Stock -->
             <div
               v-if="offer.stock === 0"
-              class="absolute inset-0 bg-white/90 rounded-xl flex items-center justify-center"
+              class="absolute inset-0 bg-white/20 rounded-full flex items-center justify-center"
             >
               <span class="bg-gray-800 text-white text-[10px] px-2 py-1 rounded-full">
                 Out of Stock
