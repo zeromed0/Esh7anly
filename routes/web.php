@@ -183,6 +183,8 @@ Route::delete('/wallet-vouchers/{id}', [AdminWalletVoucherController::class, 'de
 
     Route::get('/user/{user}/activity', [AdminUserController::class, 'activity']);
 
+    Route::post('/users/{user}/change-password', [AdminUserController::class, 'changePassword']);
+
     Route::get('/settings', [AdminSettingsController::class, 'index']);
     Route::post('/settings', [AdminSettingsController::class, 'update']);
 

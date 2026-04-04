@@ -10,6 +10,7 @@ use App\Models\AdminLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AdminUserController extends Controller
 {
@@ -60,30 +61,7 @@ public function index()
     }
 
     
-public function togglePremium(Request $request, User $user)
-{
-    $days = (int) $request->days;
 
-    if ($days <= 0) {
-        $user->update([
-            'is_premium' => false,
-            'premium_until' => null,
-        ]);
-    } else {
-        $until = now();
-
-        if ($user->premium_until && $user->premium_until > now()) {
-            $until = $user->premium_until;
-        }
-
-        $user->update([
-            'is_premium' => true,
-            'premium_until' => $until->addDays($days),
-        ]);
-    }
-
-    return back();
-}
 
     public function updateBalance(Request $request, User $user)
     {
@@ -123,6 +101,19 @@ public function togglePremium(Request $request, User $user)
 
         return back();
     }
+
+    public function changePassword(Request $request, User $user)
+{
+    $request->validate([
+        'password' => 'required|min:6'
+    ]);
+
+    $user->update([
+        'password' => Hash::make($request->password)
+    ]);
+
+    return back(); // لا نريد JSON
+}
 
     public function activity(User $user)
     {
